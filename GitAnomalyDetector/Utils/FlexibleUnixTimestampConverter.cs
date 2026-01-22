@@ -23,7 +23,6 @@ namespace GitAnomalyDetector.Utils
                         return null;
                     }
 
-                    // Try to parse ISO 8601 string to Unix timestamp
                     if (DateTime.TryParse(stringValue, out DateTime dateTime))
                     {
                         return new DateTimeOffset(dateTime).ToUnixTimeSeconds();
