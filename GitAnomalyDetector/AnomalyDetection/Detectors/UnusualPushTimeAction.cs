@@ -10,16 +10,16 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
         public Task<List<Anomaly>> DetectAsync(GitHubEvent gitHubEvent)
         {
             var anomalies = new List<Anomaly>();
-            var repository = gitHubEvent.Payload?.Repository;
+            var repository = gitHubEvent.Repository;
 
-            if (gitHubEvent.Event != EventType.Push || repository == null)
+            if (gitHubEvent.Type != EventType.Push || repository == null)
             {
                 return Task.FromResult(anomalies);
             }
 
             var pushTime = repository.PushedAt;
 
-            if (pushTime.Hour > SuspiciousTimeStart || pushTime.Hour < SuspiciousTimeEnd)
+            if (pushTime.Hour >= SuspiciousTimeStart && pushTime.Hour <= SuspiciousTimeEnd)
             {
                 anomalies.Add(new Anomaly
                 {

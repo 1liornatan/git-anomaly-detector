@@ -4,10 +4,19 @@ namespace GitAnomalyDetector.Dtos
 {
     public class GitHubEventDto
     {
-        [JsonPropertyName("event")]
-        public string? Event { get; set; }
+        [JsonPropertyName("action")]
+        public string? Action { get; set; }
 
-        [JsonPropertyName("payload")]
-        public PayloadDto? Payload { get; set; }
+        [JsonPropertyName("team")]
+        public TeamDto? Team { get; set; }
+
+        [JsonPropertyName("organization")]
+        public OrganizationDto? Organization { get; set; }
+
+        [JsonPropertyName("sender")]
+        public UserDto? Sender { get; set; }
+
+        [JsonPropertyName("repository")]
+        public RepositoryDto? Repository { get; set; }
     }
 }

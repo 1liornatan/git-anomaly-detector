@@ -11,14 +11,12 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
         {
             var anomalies = new List<Anomaly>();
 
-            var payload = gitHubEvent.Payload;
-
-            if (gitHubEvent.Event != EventType.Repository || payload.Action != EventAction.Deleted)
+            if (gitHubEvent.Type != EventType.Repository || gitHubEvent.Action != EventAction.Deleted)
             {
                 return Task.FromResult(anomalies);
             }
 
-            var repository = payload.Repository;
+            var repository = gitHubEvent.Repository;
 
             if (repository == null)
             {

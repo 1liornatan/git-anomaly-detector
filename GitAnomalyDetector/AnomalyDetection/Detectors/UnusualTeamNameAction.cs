@@ -11,14 +11,13 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
         {
             var anomalies = new List<Anomaly>();
 
-            var payload = gitHubEvent.Payload;
 
-            if (gitHubEvent.Event != EventType.Team || payload.Action != EventAction.Created)
+            if (gitHubEvent.Type != EventType.Team || gitHubEvent.Action != EventAction.Created)
             {
                 return Task.FromResult(anomalies);
             }
 
-            var team = payload.Team;
+            var team = gitHubEvent.Team;
 
             if (string.IsNullOrWhiteSpace(team?.Name))
             {

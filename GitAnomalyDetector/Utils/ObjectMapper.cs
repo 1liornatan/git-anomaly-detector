@@ -1,3 +1,4 @@
+using GitAnomalyDetector.Controllers;
 using GitAnomalyDetector.Dtos;
 using GitAnomalyDetector.Models;
 
@@ -7,28 +8,15 @@ namespace GitAnomalyDetector.Utils
     {
         public static GitHubEvent? MapGitHubEvent(GitHubEventDto gitHubEventDto)
         {
-            if (gitHubEventDto.Payload == null)
-                return null;
-
-            var eventType = Enum.TryParse<EventType>(gitHubEventDto.Event, true, out var parsedEventType)
-                ? parsedEventType
-                : EventType.Unknown;
-
-            var eventAction = Enum.TryParse<EventAction>(gitHubEventDto.Payload.Action, true, out var parsedAction)
-                ? parsedAction
-                : EventAction.Unknown;
+            var eventAction = EventTypesParser.ParseEventAction(gitHubEventDto.Action);
 
             return new GitHubEvent
             {
-                Event = eventType,
-                Payload = new Payload
-                {
-                    Action = eventAction,
-                    Team = MapTeam(gitHubEventDto.Payload.Team),
-                    Organization = MapOrganization(gitHubEventDto.Payload.Organization),
-                    Sender = MapUser(gitHubEventDto.Payload.Sender),
-                    Repository = MapRepository(gitHubEventDto.Payload.Repository)
-                }
+                Action = eventAction,
+                Team = MapTeam(gitHubEventDto.Team),
+                Organization = MapOrganization(gitHubEventDto.Organization),
+                Sender = MapUser(gitHubEventDto.Sender),
+                Repository = MapRepository(gitHubEventDto.Repository)
             };
         }
 
@@ -53,11 +41,16 @@ namespace GitAnomalyDetector.Utils
                 ? UnixTimeStampToDateTime(repository.PushedAt.Value)
                 : DateTime.MinValue;
 
+            var createdAt = repository.CreatedAt.HasValue
+                ? UnixTimeStampToDateTime(repository.CreatedAt.Value)
+                : DateTime.MinValue;
+
             return new Repository
             {
                 Id = repository.Id,
                 FullName = repository.FullName,
-                PushedAt = pushedAt
+                PushedAt = pushedAt,
+                CreatedAt = createdAt
             };
         }
 

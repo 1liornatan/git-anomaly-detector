@@ -14,5 +14,9 @@ namespace GitAnomalyDetector.Dtos
         [JsonPropertyName("pushed_at")]
         [JsonConverter(typeof(FlexibleUnixTimestampConverter))]
         public long? PushedAt { get; set; }
+
+        [JsonPropertyName("created_at")]
+        [JsonConverter(typeof(FlexibleUnixTimestampConverter))]
+        public long? CreatedAt { get; set; }
     }
 }
