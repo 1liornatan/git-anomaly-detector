@@ -20,7 +20,7 @@ namespace GitAnomalyDetector.Utils
             };
         }
 
-        internal static Team? MapTeam(TeamDto? team)
+        public static Team? MapTeam(TeamDto? team)
         {
             if (team == null)
                 return null;
@@ -32,7 +32,7 @@ namespace GitAnomalyDetector.Utils
             };
         }
 
-        internal static Repository? MapRepository(RepositoryDto? repository)
+        public static Repository? MapRepository(RepositoryDto? repository)
         {
             if (repository == null)
                 return null;
@@ -54,13 +54,13 @@ namespace GitAnomalyDetector.Utils
             };
         }
 
-        private static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
         {
             var dateTime = DateTimeOffset.FromUnixTimeSeconds(unixTimeStamp).DateTime;
             return dateTime;
         }
 
-        internal static Organization? MapOrganization(OrganizationDto? organization)
+        public static Organization? MapOrganization(OrganizationDto? organization)
         {
             if (organization?.Login == null)
                 return null;
@@ -72,7 +72,7 @@ namespace GitAnomalyDetector.Utils
             };
         }
 
-        internal static User? MapUser(UserDto? user)
+        public static User? MapUser(UserDto? user)
         {
             if (user == null)
                 return null;
