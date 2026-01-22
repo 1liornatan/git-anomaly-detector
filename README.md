@@ -15,7 +15,7 @@ dotnet --version
 From the repository root run the project directly:
 
 ```powershell
-dotnet run --project GitAnomalyDetector
+dotnet run --project .\GitAnomalyDetector\GitAnomalyDetector.csproj
 ```
 
 Or change into the project folder and run:
@@ -54,4 +54,4 @@ These lines are representative of the detector's output format and severity clas
 ## Where to look in the code
 
 - Detector implementations: GitAnomalyDetector/AnomalyDetection/Detectors
-- Event handling: GitAnomalyDetector/Program.cs and GitAnomalyDetector/Services
+- Event handling: GitAnomalyDetector/Controllers and GitAnomalyDetector/Services
