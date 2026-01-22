@@ -29,7 +29,17 @@ namespace GitAnomalyDetector.Services
                 ? $"Event processed. {allAnomalies.Count} anomalie(s) detected."
                 : "Event processed. No anomalies detected.";
 
+            PrintAnomalies(allAnomalies);
+            
             return Result.SuccessResult(message);
+        }
+
+        private void PrintAnomalies(List<Anomaly> allAnomalies)
+        {
+            allAnomalies.ForEach(anomaly =>
+            {
+                Console.WriteLine($"Anomaly Detected: Type={anomaly.Type}, Description={anomaly.Description}, Severity={anomaly.Severity}");
+            });
         }
     }
 }

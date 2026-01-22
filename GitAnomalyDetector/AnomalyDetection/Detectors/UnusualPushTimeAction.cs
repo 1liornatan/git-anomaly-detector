@@ -25,10 +25,8 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
                 {
                     Type = AnomalyType,
                     Description = $"Push to repository '{repository.FullName}' occurred at an unusual time: {pushTime:HH:mm} UTC.",
-                    Severity = "Medium"
+                    Severity = SeverityLevel.Medium
                 });
-                
-                Console.WriteLine($"Detected unusual push time at {pushTime:HH:mm} UTC for repository '{repository.FullName}'.");
             }
 
             return Task.FromResult(anomalies);

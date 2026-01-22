@@ -20,12 +20,7 @@ namespace GitAnomalyDetector.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] GitHubEventDto gitHubEventDto)
         {
-            // if(string.IsNullOrWhiteSpace(gitHubEventDto.Event))
-            // {
-            //     return BadRequest(Result.FailureResult("Event type is required."));
-            // }
             var request = HttpContext.Request;
-
             try
             {
                 var gitHubEvent = ObjectMapper.MapGitHubEvent(gitHubEventDto);
@@ -35,7 +30,6 @@ namespace GitAnomalyDetector.Controllers
                     return BadRequest(Result.FailureResult("Failed to map event."));
                 }
 
-                // set event type from header x-github-event
                 if (request.Headers.TryGetValue("X-GitHub-Event", out var eventType))
                 {
                     gitHubEvent.Type = EventTypesParser.ParseEventType(eventType);

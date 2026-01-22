@@ -1,9 +1,9 @@
-namespace GitAnomalyDetector.Services.AnomalyDetection
+namespace GitAnomalyDetector.Models
 {
     public class Anomaly
     {
         public string Type { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Severity { get; set; } = "Medium";
+        public SeverityLevel Severity { get; set; } = SeverityLevel.Low;
     }
 }

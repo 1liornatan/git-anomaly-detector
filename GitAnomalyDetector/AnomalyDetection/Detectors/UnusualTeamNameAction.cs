@@ -30,10 +30,8 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
                 {
                     Type = AnomalyType,
                     Description = $"Team '{team.Name}' created with suspicious '{SuspiciousNamePrefix}' prefix.",
-                    Severity = "Critical"
+                    Severity = SeverityLevel.Critical
                 });
-
-                Console.WriteLine($"Detected suspicious team name: '{team.Name}'.");
             }
 
             return Task.FromResult(anomalies);
