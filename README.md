@@ -54,4 +54,5 @@ These lines are representative of the detector's output format and severity clas
 ## Where to look in the code
 
 - Detector implementations: GitAnomalyDetector/AnomalyDetection/Detectors
+- Notifications implementations: GitAnomalyDetector/Notifications/Implementations
 - Event handling: GitAnomalyDetector/Controllers and GitAnomalyDetector/Services

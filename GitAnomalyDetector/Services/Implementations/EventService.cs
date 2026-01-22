@@ -1,5 +1,6 @@
 using GitAnomalyDetector.Common;
 using GitAnomalyDetector.Models;
+using GitAnomalyDetector.Notifications;
 using GitAnomalyDetector.Services.AnomalyDetection;
 
 namespace GitAnomalyDetector.Services
@@ -7,10 +8,14 @@ namespace GitAnomalyDetector.Services
     public class EventService : IEventService
     {
         private readonly IEnumerable<IAnomalyDetectionAction> _anomalyDetectionActions;
+        private readonly IEnumerable<INotificationAction> _notificationActions;
 
-        public EventService(IEnumerable<IAnomalyDetectionAction> anomalyDetectionActions)
+        public EventService(
+            IEnumerable<IAnomalyDetectionAction> anomalyDetectionActions,
+            IEnumerable<INotificationAction> notificationActions)
         {
             _anomalyDetectionActions = anomalyDetectionActions;
+            _notificationActions = notificationActions;
         }
 
         public async Task<Result> HandleEventAsync(GitHubEvent gitHubEvent)
@@ -25,21 +30,14 @@ namespace GitAnomalyDetector.Services
                 allAnomalies.AddRange(anomalies);
             }
 
+            var notificationTasks = _notificationActions.Select(action => action.SendAsync(allAnomalies));
+            await Task.WhenAll(notificationTasks);
+            
             string message = allAnomalies.Count > 0
                 ? $"Event processed. {allAnomalies.Count} anomalie(s) detected."
                 : "Event processed. No anomalies detected.";
-
-            PrintAnomalies(allAnomalies);
             
             return Result.SuccessResult(message);
-        }
-
-        private void PrintAnomalies(List<Anomaly> allAnomalies)
-        {
-            allAnomalies.ForEach(anomaly =>
-            {
-                Console.WriteLine($"Anomaly Detected: Type={anomaly.Type}, Description={anomaly.Description}, Severity={anomaly.Severity}");
-            });
         }
     }
 }
