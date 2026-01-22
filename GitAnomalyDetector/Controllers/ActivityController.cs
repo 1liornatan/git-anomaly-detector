@@ -1,4 +1,3 @@
-using GitAnomalyDetector.Common;
 using GitAnomalyDetector.Dtos;
 using GitAnomalyDetector.Services;
 using GitAnomalyDetector.Utils;

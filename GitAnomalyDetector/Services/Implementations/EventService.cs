@@ -1,7 +1,6 @@
-using GitAnomalyDetector.Common;
 using GitAnomalyDetector.Models;
 using GitAnomalyDetector.Notifications;
-using GitAnomalyDetector.Services.AnomalyDetection;
+using GitAnomalyDetector.Utils;
 
 namespace GitAnomalyDetector.Services
 {

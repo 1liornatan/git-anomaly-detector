@@ -1,6 +1,4 @@
-using GitAnomalyDetector.Services.AnomalyDetection;
-
-namespace GitAnomalyDetector.Common
+namespace GitAnomalyDetector.Utils
 {
     public class Result
     {

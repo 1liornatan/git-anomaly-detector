@@ -1,5 +1,5 @@
-using GitAnomalyDetector.Common;
 using GitAnomalyDetector.Models;
+using GitAnomalyDetector.Utils;
 
 namespace GitAnomalyDetector.Services
 {
