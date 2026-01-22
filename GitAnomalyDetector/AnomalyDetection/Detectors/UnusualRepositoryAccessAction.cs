@@ -31,7 +31,7 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
                 anomalies.Add(new Anomaly
                 {
                     Type = AnomalyType,
-                    Description = $"Push to repository '{repository.FullName}' occurred at an unusual time: {deletedTime:HH:mm} UTC.",
+                    Description = $"Removal of repository '{repository.FullName}' occurred less than {SuspiciousRepoDeletionTimeInDays} days after its creation.",
                     Severity = SeverityLevel.High
                 });
             }
