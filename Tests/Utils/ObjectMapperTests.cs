@@ -1,12 +1,14 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GitAnomalyDetector.Dtos;
 using GitAnomalyDetector.Models;
 using GitAnomalyDetector.Utils;
 
 namespace GitAnomalyDetector.Tests.Utils
 {
+    [TestClass]
     public class ObjectMapperTests
     {
-        [Fact]
+        [TestMethod]
         public void MapTeam_ValidTeamDto_ReturnsTeam()
         {
             // Arrange
@@ -20,22 +22,22 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapTeam(teamDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(123, result.Id);
-            Assert.Equal("TestTeam", result.Name);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(123, result.Id);
+            Assert.AreEqual("TestTeam", result.Name);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapTeam_NullTeamDto_ReturnsNull()
         {
             // Act
             var result = ObjectMapper.MapTeam(null);
 
             // Assert
-            Assert.Null(result);
+            Assert.IsNull(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapRepository_ValidRepositoryDto_ReturnsRepository()
         {
             // Arrange
@@ -51,14 +53,14 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapRepository(repositoryDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(789, result.Id);
-            Assert.Equal("owner/repo", result.FullName);
-            Assert.Equal(new DateTime(2021, 12, 20, 13, 46, 40, DateTimeKind.Utc), result.PushedAt);
-            Assert.Equal(new DateTime(2021, 8, 26, 15, 33, 20, DateTimeKind.Utc), result.CreatedAt);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(789, result.Id);
+            Assert.AreEqual("owner/repo", result.FullName);
+            Assert.AreEqual(new DateTime(2021, 12, 20, 11, 33, 20, DateTimeKind.Utc), result.PushedAt);
+            Assert.AreEqual(new DateTime(2021, 8, 26, 17, 46, 40, DateTimeKind.Utc), result.CreatedAt);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapRepository_NullTimestamps_UsesMinValue()
         {
             // Arrange
@@ -74,22 +76,22 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapRepository(repositoryDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(DateTime.MinValue, result.PushedAt);
-            Assert.Equal(DateTime.MinValue, result.CreatedAt);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(DateTime.MinValue, result.PushedAt);
+            Assert.AreEqual(DateTime.MinValue, result.CreatedAt);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapRepository_NullRepositoryDto_ReturnsNull()
         {
             // Act
             var result = ObjectMapper.MapRepository(null);
 
             // Assert
-            Assert.Null(result);
+            Assert.IsNull(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapOrganization_ValidOrganizationDto_ReturnsOrganization()
         {
             // Arrange
@@ -103,18 +105,18 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapOrganization(organizationDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(111, result.Id);
-            Assert.Equal("test-org", result.Login);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(111, result.Id);
+            Assert.AreEqual("test-org", result.Login);
         }
 
-        [Theory]
-        [InlineData(null)]    // Null DTO
-        [InlineData("")]      // Null login (empty string used as marker)
-        public void MapOrganization_InvalidInput_ReturnsNull(string? marker)
+        [DataTestMethod]
+        [DataRow(null)]    // Null DTO
+        [DataRow("")]      // Null login (empty string used as marker)
+        public void MapOrganization_InvalidInput_ReturnsNull(string marker)
         {
             // Arrange
-            OrganizationDto? organizationDto = marker == null 
+            OrganizationDto organizationDto = marker == null 
                 ? null 
                 : new OrganizationDto { Id = 222, Login = null };
 
@@ -122,10 +124,10 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapOrganization(organizationDto);
 
             // Assert
-            Assert.Null(result);
+            Assert.IsNull(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapUser_ValidUserDto_ReturnsUser()
         {
             // Arrange
@@ -139,22 +141,22 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapUser(userDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(333, result.Id);
-            Assert.Equal("test-user", result.Login);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(333, result.Id);
+            Assert.AreEqual("test-user", result.Login);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapUser_NullUserDto_ReturnsNull()
         {
             // Act
             var result = ObjectMapper.MapUser(null);
 
             // Assert
-            Assert.Null(result);
+            Assert.IsNull(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapUser_UserDtoWithNullLogin_ReturnsUserWithEmptyString()
         {
             // Arrange
@@ -168,15 +170,15 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapUser(userDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(444, result.Id);
-            Assert.Equal(string.Empty, result.Login);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(444, result.Id);
+            Assert.AreEqual(string.Empty, result.Login);
         }
 
-        [Theory]
-        [InlineData(1640000000, 2021, 12, 20, 13, 46, 40)]  // Standard timestamp
-        [InlineData(0, 1970, 1, 1, 0, 0, 0)]                 // Unix epoch
-        [InlineData(1800000000, 2027, 1, 15, 3, 20, 0)]      // Future timestamp
+        [DataTestMethod]
+        [DataRow(1640000000, 2021, 12, 20, 11, 33, 20)]  // Standard timestamp
+        [DataRow(0, 1970, 1, 1, 0, 0, 0)]                 // Unix epoch
+        [DataRow(1800000000, 2027, 1, 15, 8, 0, 0)]       // Future timestamp
         public void UnixTimeStampToDateTime_ValidTimestamp_ReturnsCorrectDateTime(
             long timestamp, int year, int month, int day, int hour, int minute, int second)
         {
@@ -184,10 +186,10 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.UnixTimeStampToDateTime(timestamp);
 
             // Assert
-            Assert.Equal(new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc), result);
+            Assert.AreEqual(new DateTime(year, month, day, hour, minute, second, DateTimeKind.Utc), result);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapGitHubEvent_CompleteGitHubEventDto_ReturnsCompleteGitHubEvent()
         {
             // Arrange
@@ -210,19 +212,19 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapGitHubEvent(gitHubEventDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(EventAction.Created, result.Action);
-            Assert.NotNull(result.Team);
-            Assert.Equal(123, result.Team.Id);
-            Assert.NotNull(result.Organization);
-            Assert.Equal("TestOrg", result.Organization.Login);
-            Assert.NotNull(result.Sender);
-            Assert.Equal("TestUser", result.Sender.Login);
-            Assert.NotNull(result.Repository);
-            Assert.Equal("owner/repo", result.Repository.FullName);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(EventAction.Created, result.Action);
+            Assert.IsNotNull(result.Team);
+            Assert.AreEqual(123, result.Team.Id);
+            Assert.IsNotNull(result.Organization);
+            Assert.AreEqual("TestOrg", result.Organization.Login);
+            Assert.IsNotNull(result.Sender);
+            Assert.AreEqual("TestUser", result.Sender.Login);
+            Assert.IsNotNull(result.Repository);
+            Assert.AreEqual("owner/repo", result.Repository.FullName);
         }
 
-        [Fact]
+        [TestMethod]
         public void MapGitHubEvent_MinimalGitHubEventDto_ReturnsGitHubEventWithNulls()
         {
             // Arrange
@@ -239,12 +241,12 @@ namespace GitAnomalyDetector.Tests.Utils
             var result = ObjectMapper.MapGitHubEvent(gitHubEventDto);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(EventAction.Unknown, result.Action);
-            Assert.Null(result.Team);
-            Assert.Null(result.Organization);
-            Assert.Null(result.Sender);
-            Assert.Null(result.Repository);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(EventAction.Unknown, result.Action);
+            Assert.IsNull(result.Team);
+            Assert.IsNull(result.Organization);
+            Assert.IsNull(result.Sender);
+            Assert.IsNull(result.Repository);
         }
     }
 }

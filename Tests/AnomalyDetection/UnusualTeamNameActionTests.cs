@@ -1,22 +1,28 @@
-using GitAnomalyDetector.Models;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GitAnomalyDetector.Services.AnomalyDetection;
+using GitAnomalyDetector.Models;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace GitAnomalyDetector.Tests.AnomalyDetection
 {
+    [TestClass]
     public class UnusualTeamNameActionTests
     {
-        private readonly UnusualTeamNameAction _detector;
+        private UnusualTeamNameAction _detector;
 
-        public UnusualTeamNameActionTests()
+        [TestInitialize]
+        public void Initialize()
         {
-            _detector = new UnusualTeamNameAction();
+            var mockLogger = new Mock<ILogger<UnusualTeamNameAction>>();
+            _detector = new UnusualTeamNameAction(mockLogger.Object);
         }
 
-        [Theory]
-        [InlineData("hackerteam")]      // Lowercase
-        [InlineData("HackerGroup")]     // Capitalized
-        [InlineData("HaCkErElite")]     // Mixed case
-        [InlineData("HACKERS")]         // Uppercase
+        [DataTestMethod]
+        [DataRow("hackerteam")]      // Lowercase
+        [DataRow("HackerGroup")]     // Capitalized
+        [DataRow("HaCkErElite")]     // Mixed case
+        [DataRow("HACKERS")]         // Uppercase
         public async Task DetectAsync_TeamCreatedWithHackerPrefix_ReturnsAnomaly(string teamName)
         {
             // Arrange
@@ -35,16 +41,16 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal("HackerPrefixTeam", result[0].Type);
-            Assert.Equal(SeverityLevel.Critical, result[0].Severity);
-            Assert.Contains(teamName, result[0].Description);
-            Assert.Contains("suspicious", result[0].Description);
+            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual("HackerPrefixTeam", result[0].Type);
+            Assert.AreEqual(SeverityLevel.Critical, result[0].Severity);
+            Assert.IsTrue(result[0].Description.Contains(teamName));
+            Assert.IsTrue(result[0].Description.Contains("suspicious"));
         }
 
-        [Theory]
-        [InlineData("developers")]      // Normal name
-        [InlineData("growthackers")]    // Hacker in middle
+        [DataTestMethod]
+        [DataRow("developers")]      // Normal name
+        [DataRow("growthackers")]    // Hacker in middle
         public async Task DetectAsync_TeamCreatedWithNormalName_ReturnsNoAnomaly(string teamName)
         {
             // Arrange
@@ -63,10 +69,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_TeamDeletedEvent_ReturnsNoAnomaly()
         {
             // Arrange
@@ -85,10 +91,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_NonTeamEvent_ReturnsNoAnomaly()
         {
             // Arrange
@@ -107,14 +113,14 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Theory]
-        [InlineData(null)]        // Null name
-        [InlineData("")]          // Empty name
-        [InlineData("   ")]       // Whitespace name
-        public async Task DetectAsync_TeamWithInvalidName_ReturnsNoAnomaly(string? teamName)
+        [DataTestMethod]
+        [DataRow(null)]        // Null name
+        [DataRow("")]          // Empty name
+        [DataRow("   ")]       // Whitespace name
+        public async Task DetectAsync_TeamWithInvalidName_ReturnsNoAnomaly(string teamName)
         {
             // Arrange
             var gitHubEvent = new GitHubEvent
@@ -132,10 +138,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_NullTeam_ReturnsNoAnomaly()
         {
             // Arrange
@@ -150,7 +156,7 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
     }
 }

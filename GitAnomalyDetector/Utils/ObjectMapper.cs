@@ -56,7 +56,7 @@ namespace GitAnomalyDetector.Utils
 
         public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
         {
-            var dateTime = DateTimeOffset.FromUnixTimeSeconds(unixTimeStamp).DateTime;
+            var dateTime = DateTimeOffset.FromUnixTimeSeconds(unixTimeStamp).UtcDateTime;
             return dateTime;
         }
 

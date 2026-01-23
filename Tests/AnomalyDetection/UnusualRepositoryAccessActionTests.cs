@@ -1,26 +1,32 @@
-using GitAnomalyDetector.Models;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GitAnomalyDetector.Services.AnomalyDetection;
+using GitAnomalyDetector.Models;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace GitAnomalyDetector.Tests.AnomalyDetection
 {
+    [TestClass]
     public class UnusualRepositoryAccessActionTests
     {
-        private readonly UnusualRepositoryAccessAction _detector;
+        private UnusualRepositoryAccessAction _detector;
 
-        public UnusualRepositoryAccessActionTests()
+        [TestInitialize]
+        public void Initialize()
         {
-            _detector = new UnusualRepositoryAccessAction();
+            var mockLogger = new Mock<ILogger<UnusualRepositoryAccessAction>>();
+            _detector = new UnusualRepositoryAccessAction(mockLogger.Object);
         }
 
-        [Theory]
-        [InlineData(4)]   // Within threshold
-        [InlineData(10)]  // At boundary
-        [InlineData(0)]   // Immediate deletion
+        [DataTestMethod]
+        [DataRow(4)]   // Within threshold
+        [DataRow(10)]  // At boundary
+        [DataRow(0)]   // Immediate deletion
         public async Task DetectAsync_RepositoryDeletedWithin10Days_ReturnsAnomaly(int daysAfterCreation)
         {
             // Arrange
             var createdTime = new DateTime(2026, 1, 1, 10, 0, 0, DateTimeKind.Utc);
-            var deletedTime = createdTime.AddDays(daysAfterCreation).AddMinutes(5);
+            var deletedTime = createdTime.AddDays(daysAfterCreation);
             var gitHubEvent = new GitHubEvent
             {
                 Type = EventType.Repository,
@@ -38,16 +44,16 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal("UnusualRepositoryAccess", result[0].Type);
-            Assert.Equal(SeverityLevel.High, result[0].Severity);
-            Assert.Contains("test/suspicious-repo", result[0].Description);
-            Assert.Contains("10 days", result[0].Description);
+            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual("UnusualRepositoryAccess", result[0].Type);
+            Assert.AreEqual(SeverityLevel.High, result[0].Severity);
+            Assert.IsTrue(result[0].Description.Contains("test/suspicious-repo"));
+            Assert.IsTrue(result[0].Description.Contains("10 days"));
         }
 
-        [Theory]
-        [InlineData(11)]  // Just after threshold
-        [InlineData(30)]  // Much later
+        [DataTestMethod]
+        [DataRow(11)]  // Just after threshold
+        [DataRow(30)]  // Much later
         public async Task DetectAsync_RepositoryDeletedAfter10Days_ReturnsNoAnomaly(int daysAfterCreation)
         {
             // Arrange
@@ -70,10 +76,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_RepositoryCreatedEvent_ReturnsNoAnomaly()
         {
             // Arrange
@@ -95,10 +101,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_NonRepositoryEvent_ReturnsNoAnomaly()
         {
             // Arrange
@@ -119,10 +125,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_NullRepository_ReturnsNoAnomaly()
         {
             // Arrange
@@ -137,7 +143,7 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
     }
 }

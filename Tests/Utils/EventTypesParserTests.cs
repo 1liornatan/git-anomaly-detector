@@ -1,88 +1,91 @@
-using GitAnomalyDetector.Controllers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GitAnomalyDetector.Models;
+using GitAnomalyDetector.Utils;
+using GitAnomalyDetector.Controllers;
 
 namespace GitAnomalyDetector.Tests.Utils
 {
+    [TestClass]
     public class EventTypesParserTests
     {
-        [Theory]
-        [InlineData("Push", EventType.Push)]
-        [InlineData("Team", EventType.Team)]
-        [InlineData("Repository", EventType.Repository)]
-        [InlineData("Ping", EventType.Ping)]
+        [DataTestMethod]
+        [DataRow("Push", EventType.Push)]
+        [DataRow("Team", EventType.Team)]
+        [DataRow("Repository", EventType.Repository)]
+        [DataRow("Ping", EventType.Ping)]
         public void ParseEventType_ValidType_ReturnsCorrectEventType(string input, EventType expected)
         {
             // Act
             var result = EventTypesParser.ParseEventType(input);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.AreEqual(expected, result);
         }
 
-        [Theory]
-        [InlineData("push")]         // Lowercase
-        [InlineData("TEAM")]         // Uppercase
-        [InlineData("rEpOsItOrY")]   // Mixed case
+        [DataTestMethod]
+        [DataRow("push")]         // Lowercase
+        [DataRow("TEAM")]         // Uppercase
+        [DataRow("rEpOsItOrY")]   // Mixed case
         public void ParseEventType_CaseInsensitiveInput_ReturnsCorrectType(string input)
         {
             // Act
             var result = EventTypesParser.ParseEventType(input);
 
             // Assert
-            Assert.NotEqual(EventType.Unknown, result);
+            Assert.AreNotEqual(EventType.Unknown, result);
         }
 
-        [Theory]
-        [InlineData("InvalidType")]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        public void ParseEventType_InvalidInput_ReturnsUnknown(string? input)
+        [DataTestMethod]
+        [DataRow("InvalidType")]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow("   ")]
+        public void ParseEventType_InvalidInput_ReturnsUnknown(string input)
         {
             // Act
             var result = EventTypesParser.ParseEventType(input);
 
             // Assert
-            Assert.Equal(EventType.Unknown, result);
+            Assert.AreEqual(EventType.Unknown, result);
         }
 
-        [Theory]
-        [InlineData("Created", EventAction.Created)]
-        [InlineData("Deleted", EventAction.Deleted)]
+        [DataTestMethod]
+        [DataRow("Created", EventAction.Created)]
+        [DataRow("Deleted", EventAction.Deleted)]
         public void ParseEventAction_ValidAction_ReturnsCorrectEventAction(string input, EventAction expected)
         {
             // Act
             var result = EventTypesParser.ParseEventAction(input);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.AreEqual(expected, result);
         }
 
-        [Theory]
-        [InlineData("created")]      // Lowercase
-        [InlineData("DELETED")]      // Uppercase
-        [InlineData("CrEaTeD")]      // Mixed case
+        [DataTestMethod]
+        [DataRow("created")]      // Lowercase
+        [DataRow("DELETED")]      // Uppercase
+        [DataRow("CrEaTeD")]      // Mixed case
         public void ParseEventAction_CaseInsensitiveInput_ReturnsCorrectAction(string input)
         {
             // Act
             var result = EventTypesParser.ParseEventAction(input);
 
             // Assert
-            Assert.NotEqual(EventAction.Unknown, result);
+            Assert.AreNotEqual(EventAction.Unknown, result);
         }
 
-        [Theory]
-        [InlineData("InvalidAction")]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        public void ParseEventAction_InvalidInput_ReturnsUnknown(string? input)
+        [DataTestMethod]
+        [DataRow("InvalidAction")]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow("   ")]
+        public void ParseEventAction_InvalidInput_ReturnsUnknown(string input)
         {
             // Act
             var result = EventTypesParser.ParseEventAction(input);
 
             // Assert
-            Assert.Equal(EventAction.Unknown, result);
+            Assert.AreEqual(EventAction.Unknown, result);
         }
     }
 }

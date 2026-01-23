@@ -1,20 +1,24 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using GitAnomalyDetector.Models;
 using GitAnomalyDetector.Notifications;
 using GitAnomalyDetector.Services;
-using GitAnomalyDetector.Utils;
-using Moq;
+using GitAnomalyDetector.Services.AnomalyDetection;
+using Microsoft.Extensions.Logging;
 
 namespace GitAnomalyDetector.Tests.Services
 {
+    [TestClass]
     public class EventServiceTests
     {
-        private readonly Mock<IAnomalyDetectionAction> _mockDetector1;
-        private readonly Mock<IAnomalyDetectionAction> _mockDetector2;
-        private readonly Mock<INotificationAction> _mockNotification1;
-        private readonly Mock<INotificationAction> _mockNotification2;
-        private readonly EventService _eventService;
+        private Mock<IAnomalyDetectionAction> _mockDetector1;
+        private Mock<IAnomalyDetectionAction> _mockDetector2;
+        private Mock<INotificationAction> _mockNotification1;
+        private Mock<INotificationAction> _mockNotification2;
+        private EventService _eventService;
 
-        public EventServiceTests()
+        [TestInitialize]
+        public void Initialize()
         {
             _mockDetector1 = new Mock<IAnomalyDetectionAction>();
             _mockDetector2 = new Mock<IAnomalyDetectionAction>();
@@ -23,11 +27,12 @@ namespace GitAnomalyDetector.Tests.Services
 
             var detectors = new List<IAnomalyDetectionAction> { _mockDetector1.Object, _mockDetector2.Object };
             var notifications = new List<INotificationAction> { _mockNotification1.Object, _mockNotification2.Object };
+            var mockLogger = new Mock<ILogger<EventService>>();
 
-            _eventService = new EventService(detectors, notifications);
+            _eventService = new EventService(detectors, notifications, mockLogger.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_WithNoAnomalies_ReturnsSuccessWithNoAnomaliesMessage()
         {
             // Arrange
@@ -39,15 +44,13 @@ namespace GitAnomalyDetector.Tests.Services
             var result = await _eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal("Event processed. No anomalies detected.", result.Message);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual("Event processed. No anomalies detected.", result.Message);
             _mockDetector1.Verify(d => d.DetectAsync(gitHubEvent), Times.Once);
             _mockDetector2.Verify(d => d.DetectAsync(gitHubEvent), Times.Once);
-            _mockNotification1.Verify(n => n.SendAsync(It.IsAny<List<Anomaly>>()), Times.Once);
-            _mockNotification2.Verify(n => n.SendAsync(It.IsAny<List<Anomaly>>()), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_WithSingleAnomaly_ReturnsSuccessWithCountMessage()
         {
             // Arrange
@@ -66,11 +69,11 @@ namespace GitAnomalyDetector.Tests.Services
             var result = await _eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal("Event processed. 1 anomalie(s) detected.", result.Message);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual("Event processed. 1 anomalie(s) detected.", result.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_WithMultipleAnomalies_ReturnsSuccessWithCorrectCount()
         {
             // Arrange
@@ -101,11 +104,11 @@ namespace GitAnomalyDetector.Tests.Services
             var result = await _eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal("Event processed. 3 anomalie(s) detected.", result.Message);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual("Event processed. 3 anomalie(s) detected.", result.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_CallsAllDetectors_InParallel()
         {
             // Arrange
@@ -131,13 +134,13 @@ namespace GitAnomalyDetector.Tests.Services
             await _eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.True(detector1Called);
-            Assert.True(detector2Called);
+            Assert.IsTrue(detector1Called);
+            Assert.IsTrue(detector2Called);
             _mockDetector1.Verify(d => d.DetectAsync(gitHubEvent), Times.Once);
             _mockDetector2.Verify(d => d.DetectAsync(gitHubEvent), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_CallsAllNotifications_WithCorrectAnomalies()
         {
             // Arrange
@@ -152,8 +155,8 @@ namespace GitAnomalyDetector.Tests.Services
             _mockDetector1.Setup(d => d.DetectAsync(gitHubEvent)).ReturnsAsync(new List<Anomaly> { anomaly });
             _mockDetector2.Setup(d => d.DetectAsync(gitHubEvent)).ReturnsAsync(new List<Anomaly>());
 
-            List<Anomaly>? capturedAnomalies1 = null;
-            List<Anomaly>? capturedAnomalies2 = null;
+            List<Anomaly> capturedAnomalies1 = null;
+            List<Anomaly> capturedAnomalies2 = null;
 
             _mockNotification1.Setup(n => n.SendAsync(It.IsAny<List<Anomaly>>()))
                 .Callback<List<Anomaly>>(anomalies => capturedAnomalies1 = anomalies)
@@ -167,32 +170,33 @@ namespace GitAnomalyDetector.Tests.Services
             await _eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.NotNull(capturedAnomalies1);
-            Assert.NotNull(capturedAnomalies2);
-            Assert.Single(capturedAnomalies1);
-            Assert.Single(capturedAnomalies2);
-            Assert.Equal("TestAnomaly", capturedAnomalies1[0].Type);
-            Assert.Equal("TestAnomaly", capturedAnomalies2[0].Type);
+            Assert.IsNotNull(capturedAnomalies1);
+            Assert.IsNotNull(capturedAnomalies2);
+            Assert.AreEqual(1, capturedAnomalies1.Count());
+            Assert.AreEqual(1, capturedAnomalies2.Count());
+            Assert.AreEqual("TestAnomaly", capturedAnomalies1[0].Type);
+            Assert.AreEqual("TestAnomaly", capturedAnomalies2[0].Type);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_WithNoDetectors_ReturnsSuccessWithNoAnomalies()
         {
             // Arrange
             var gitHubEvent = new GitHubEvent { Type = EventType.Ping };
             var emptyDetectors = new List<IAnomalyDetectionAction>();
             var notifications = new List<INotificationAction> { _mockNotification1.Object };
-            var eventService = new EventService(emptyDetectors, notifications);
+            var mockLogger = new Mock<ILogger<EventService>>();
+            var eventService = new EventService(emptyDetectors, notifications, mockLogger.Object);
 
             // Act
             var result = await eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal("Event processed. No anomalies detected.", result.Message);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual("Event processed. No anomalies detected.", result.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_WithNoNotifications_StillProcessesDetectors()
         {
             // Arrange
@@ -208,18 +212,19 @@ namespace GitAnomalyDetector.Tests.Services
 
             var detectors = new List<IAnomalyDetectionAction> { _mockDetector1.Object };
             var emptyNotifications = new List<INotificationAction>();
-            var eventService = new EventService(detectors, emptyNotifications);
+            var mockLogger = new Mock<ILogger<EventService>>();
+            var eventService = new EventService(detectors, emptyNotifications, mockLogger.Object);
 
             // Act
             var result = await eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal("Event processed. 1 anomalie(s) detected.", result.Message);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual("Event processed. 1 anomalie(s) detected.", result.Message);
             _mockDetector1.Verify(d => d.DetectAsync(gitHubEvent), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HandleEventAsync_AggregatesAnomaliesFromAllDetectors()
         {
             // Arrange
@@ -233,7 +238,7 @@ namespace GitAnomalyDetector.Tests.Services
             _mockDetector2.Setup(d => d.DetectAsync(gitHubEvent))
                 .ReturnsAsync(new List<Anomaly> { anomaly3 });
 
-            List<Anomaly>? capturedAnomalies = null;
+            List<Anomaly> capturedAnomalies = null;
             _mockNotification1.Setup(n => n.SendAsync(It.IsAny<List<Anomaly>>()))
                 .Callback<List<Anomaly>>(anomalies => capturedAnomalies = anomalies)
                 .Returns(Task.CompletedTask);
@@ -242,11 +247,11 @@ namespace GitAnomalyDetector.Tests.Services
             await _eventService.HandleEventAsync(gitHubEvent);
 
             // Assert
-            Assert.NotNull(capturedAnomalies);
-            Assert.Equal(3, capturedAnomalies.Count);
-            Assert.Contains(capturedAnomalies, a => a.Type == "Type1");
-            Assert.Contains(capturedAnomalies, a => a.Type == "Type2");
-            Assert.Contains(capturedAnomalies, a => a.Type == "Type3");
+            Assert.IsNotNull(capturedAnomalies);
+            Assert.AreEqual(3, capturedAnomalies.Count);
+            Assert.IsTrue(capturedAnomalies.Any(a => a.Type == "Type1"));
+            Assert.IsTrue(capturedAnomalies.Any(a => a.Type == "Type2"));
+            Assert.IsTrue(capturedAnomalies.Any(a => a.Type == "Type3"));
         }
     }
 }

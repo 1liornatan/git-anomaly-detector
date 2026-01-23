@@ -1,21 +1,27 @@
-using GitAnomalyDetector.Models;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GitAnomalyDetector.Services.AnomalyDetection;
+using GitAnomalyDetector.Models;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace GitAnomalyDetector.Tests.AnomalyDetection
 {
+    [TestClass]
     public class UnusualPushTimeActionTests
     {
-        private readonly UnusualPushTimeAction _detector;
+        private UnusualPushTimeAction _detector;
 
-        public UnusualPushTimeActionTests()
+        [TestInitialize]
+        public void Initialize()
         {
-            _detector = new UnusualPushTimeAction();
+            var mockLogger = new Mock<ILogger<UnusualPushTimeAction>>();
+            _detector = new UnusualPushTimeAction(mockLogger.Object);
         }
 
-        [Theory]
-        [InlineData(14, 0)]  // Start boundary
-        [InlineData(15, 30)] // Middle
-        [InlineData(16, 0)]  // End boundary
+        [DataTestMethod]
+        [DataRow(14, 0)]  // Start boundary
+        [DataRow(15, 30)] // Middle
+        [DataRow(16, 0)]  // End boundary
         public async Task DetectAsync_PushEventDuringSuspiciousHours_ReturnsAnomaly(int hour, int minute)
         {
             // Arrange
@@ -36,16 +42,16 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal("UnusualPushTime", result[0].Type);
-            Assert.Equal(SeverityLevel.Medium, result[0].Severity);
-            Assert.Contains("test/repo", result[0].Description);
+            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual("UnusualPushTime", result[0].Type);
+            Assert.AreEqual(SeverityLevel.Medium, result[0].Severity);
+            Assert.IsTrue(result[0].Description.Contains("test/repo"));
         }
 
-        [Theory]
-        [InlineData(10, 0)]  // Normal hours
-        [InlineData(13, 59)] // Just before range
-        [InlineData(17, 0)]  // Just after range
+        [DataTestMethod]
+        [DataRow(10, 0)]  // Normal hours
+        [DataRow(13, 59)] // Just before range
+        [DataRow(17, 0)]  // Just after range
         public async Task DetectAsync_PushEventOutsideSuspiciousHours_ReturnsNoAnomaly(int hour, int minute)
         {
             // Arrange
@@ -66,10 +72,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_NonPushEvent_ReturnsNoAnomaly()
         {
             // Arrange
@@ -89,10 +95,10 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DetectAsync_NullRepository_ReturnsNoAnomaly()
         {
             // Arrange
@@ -106,7 +112,7 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             var result = await _detector.DetectAsync(gitHubEvent);
 
             // Assert
-            Assert.Empty(result);
+            Assert.AreEqual(0, result.Count());
         }
     }
 }
