@@ -22,11 +22,11 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
         [DataRow(4)]   // Within threshold
         [DataRow(10)]  // At boundary
         [DataRow(0)]   // Immediate deletion
-        public async Task DetectAsync_RepositoryDeletedWithin10Days_ReturnsAnomaly(int daysAfterCreation)
+        public async Task DetectAsync_RepositoryDeletedWithin10Minutes_ReturnsAnomaly(int minutesAfterCreation)
         {
             // Arrange
             var createdTime = new DateTime(2026, 1, 1, 10, 0, 0, DateTimeKind.Utc);
-            var deletedTime = createdTime.AddDays(daysAfterCreation);
+            var deletedTime = createdTime.AddMinutes(minutesAfterCreation);
             var gitHubEvent = new GitHubEvent
             {
                 Type = EventType.Repository,
@@ -48,17 +48,17 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
             Assert.AreEqual("UnusualRepositoryAccess", result[0].Type);
             Assert.AreEqual(SeverityLevel.High, result[0].Severity);
             Assert.IsTrue(result[0].Description.Contains("test/suspicious-repo"));
-            Assert.IsTrue(result[0].Description.Contains("10 days"));
+            Assert.IsTrue(result[0].Description.Contains("10 minutes"));
         }
 
         [DataTestMethod]
         [DataRow(11)]  // Just after threshold
         [DataRow(30)]  // Much later
-        public async Task DetectAsync_RepositoryDeletedAfter10Days_ReturnsNoAnomaly(int daysAfterCreation)
+        public async Task DetectAsync_RepositoryDeletedAfter10Minutes_ReturnsNoAnomaly(int minutesAfterCreation)
         {
             // Arrange
             var createdTime = new DateTime(2026, 1, 1, 10, 0, 0, DateTimeKind.Utc);
-            var deletedTime = createdTime.AddDays(daysAfterCreation);
+            var deletedTime = createdTime.AddMinutes(minutesAfterCreation);
             var gitHubEvent = new GitHubEvent
             {
                 Type = EventType.Repository,
@@ -116,7 +116,7 @@ namespace GitAnomalyDetector.Tests.AnomalyDetection
                 {
                     Id = 456,
                     FullName = "test/repo",
-                    CreatedAt = DateTime.UtcNow.AddDays(-5),
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-5),
                     PushedAt = DateTime.UtcNow
                 }
             };

@@ -5,7 +5,7 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
     public class UnusualRepositoryAccessAction : IAnomalyDetectionAction
     {
         private readonly ILogger<UnusualRepositoryAccessAction> _logger;
-        private const int SuspiciousRepoDeletionTimeInDays = 10;
+        private const int SuspiciousRepoDeletionTimeInMinutes = 10;
         public static string AnomalyType = "UnusualRepositoryAccess";
 
         public UnusualRepositoryAccessAction(ILogger<UnusualRepositoryAccessAction> logger)
@@ -35,15 +35,15 @@ namespace GitAnomalyDetector.Services.AnomalyDetection
             var createdTime = repository.CreatedAt;
             var deletedTime = repository.PushedAt;
             var timeSpan = deletedTime - createdTime;
-            _logger.LogDebug($"UnusualRepositoryAccessAction: Checking repository {repository.FullName} deletion. Created: {createdTime}, Deleted: {deletedTime}, Age: {timeSpan.TotalDays} days");
+            _logger.LogDebug($"UnusualRepositoryAccessAction: Checking repository {repository.FullName} deletion. Created: {createdTime}, Deleted: {deletedTime}, Age: {timeSpan.TotalMinutes} minutes");
 
-            if (deletedTime - createdTime <= TimeSpan.FromDays(SuspiciousRepoDeletionTimeInDays))
+            if (deletedTime - createdTime <= TimeSpan.FromMinutes(SuspiciousRepoDeletionTimeInMinutes))
             {
-                _logger.LogWarning($"UnusualRepositoryAccessAction: Detected suspicious repository deletion of {repository.FullName} within {timeSpan.TotalDays} days");
+                _logger.LogWarning($"UnusualRepositoryAccessAction: Detected suspicious repository deletion of {repository.FullName} within {timeSpan.TotalMinutes} minutes");
                 anomalies.Add(new Anomaly
                 {
                     Type = AnomalyType,
-                    Description = $"Removal of repository '{repository.FullName}' occurred less than {SuspiciousRepoDeletionTimeInDays} days after its creation.",
+                    Description = $"Removal of repository '{repository.FullName}' within {SuspiciousRepoDeletionTimeInMinutes} minutes after its creation.",
                     Severity = SeverityLevel.High
                 });
             }
