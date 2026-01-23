@@ -1,5 +1,4 @@
 using GitAnomalyDetector.Models;
-using GitAnomalyDetector.Services.AnomalyDetection;
 
 namespace GitAnomalyDetector.Services
 {

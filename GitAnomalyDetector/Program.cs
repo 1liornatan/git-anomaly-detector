@@ -8,6 +8,14 @@ var builder = WebApplication.CreateBuilder(args);
 var webHostUrl = builder.Configuration["WebHost:Url"] ?? "http://127.0.0.1:3000";
 builder.WebHost.UseUrls(webHostUrl);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.IncludeScopes = false;
+    options.SingleLine = true;
+    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+});
+
 builder.Services.AddControllers();
 builder.Services.AddTransient<IEventService, EventService>();
 
